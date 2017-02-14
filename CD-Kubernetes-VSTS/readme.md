@@ -54,7 +54,7 @@ If following steps 1b, then an additional build defition should be created as a 
 
 1. Publish required Kubernetes artifacts for Release - The files which deploy Kubernetes resources are done using JSON or YAML files.  Explanation of how to create these files is beyond scope of the article. [See here](https://kubernetes.io/docs/concepts/abstractions/overview/) as a starting point. However [here is the reference yaml file](./code/api-user.yaml) used to publish this API-User app to Kubernetes.  Note: It's important to call out the lines at the end which reference the secret Kubernetes will use to pull the image pushed earlier into ACR.  The secret with this name will be covered in step 3.4 below.
 
-    ``` language: YAML
+    ```yaml
           imagePullSecrets:
             - name: ascreg
     ```
