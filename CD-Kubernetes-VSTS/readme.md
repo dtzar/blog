@@ -58,6 +58,7 @@ If following steps 1b, then an additional build defition should be created as a 
           imagePullSecrets:
             - name: ascreg
     ```
+
     Now check-in the defined YAML file and [kubectl executeable](https://kubernetes.io/docs/user-guide/prereqs/) into the source repo, add the "Copy and Publish Build Artifacts" task, and specify the location of where the YAML and kubectl files are located in the contents box separated by a new line.
      > Note: Currently the Kubernetes task requires kubectl checked into source, but this could change in future versions of the task.  If multiple services are using kubectl or the desire is to reduce the size of the repository, it is best to check kubectl into a separate code repository, publish just the kubectl artifact, and then link that build artifact the desired VSTS release definitions.
 
