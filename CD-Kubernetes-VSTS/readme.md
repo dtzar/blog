@@ -66,14 +66,21 @@ If following steps 1b, then an additional build defition should be created as a 
 
 ## 3. Setup Continuous Deployment
 
-Now that the image is built and pushed to the private Docker image registry (ACR), it is time setup continuous deployment of the image to the Kubernetes cluster using VSTS.  Follow these steps:
+Now that the image is built and pushed to the private Docker image registry (ACR), it is time setup continuous deployment of the image to the Kubernetes cluster using the release management area in VSTS.  Follow these steps:
 
-1. Install the [Kubernetes task from the VSTS marketplace](https://github.com/TsuyoshiUshio/KubernetesTask) to the VSTS subscription being used. Note: This requires the owner permissions of the VSTS subscription.
+1. Install the [Kubernetes task from the VSTS marketplace](https://marketplace.visualstudio.com/items?itemName=tsuyoshiushio.k8s-endpoint) to the VSTS subscription being used. Note: This requires the owner permissions of the VSTS subscription.
 1. Add a new Kubernetes Service Endpoint in VSTS -  in order to be able to access to the cluster to do deployments.
     - Connection Name - can be whatever name makes most sense to you
     - Server URL - This is the external endpoint to the Kubernetes cluster.  For ACS + Kubernetes this would be something like `https://myownname.westus.cloudapp.azure.com` and for GKE it might be something simply like `https://104.196.235.251`.
     - Kubeconfig - this is a copy and paste of the contents inside the config file pulled securely from the Kubernetes master node of the cluster.  For more information on how to obtain this information, see the DEIS link referenced at the top of the page which provides steps to obtain both of these values from a Kubernetes cluster hosted on Azure, Google, or Amazon cloud providers.
-1. Create a new release definition and add Kubernetes task
 1. One-Time Prep Kubernetes cluster - by adding namespaces and secret for ACR.
+1. Create a new release definition
+Create a new release definition and add the Kubernetes apply task and the general task.
+    - Apply Task - specify the location of the yaml file which will configure your desired Kubernetes resources from the artifacts published in step 2.4 above.  This will execute the equivalent of `kubectl apply -f yourfile.yaml` which creates the resources specified in the yaml file if they aren't already created against the Kubernetes cluster setup in step 3.2 above.  Note: line # in the example yaml file specifies the Kubernetes namespace `ascdev` for the deployment and line # specifies `apiuserdep` as the name of the deployment.  
+
+    Technically this could be the only step executed for a deployment, but what happens when a new container image needs to be deployed?  If the yaml file uses the latest tag and the imagePullPolicy is set to always, it will update.  The challenge here is it takes more digging to know what actual build is associated with the latest tag for the deployment. If it's desired to use a tag associated with a build to deploy - then there are two major options 1) update the yaml file which references new tagged versions of the image - this could be via source code (but is challenging because of not knowing the build number) or via a tokenizer task to modify the yaml build number in this phase of the release.  2) Execute the `kubectl set image` ... command as explained in the general task next.
+    - General Task - specify the base kubectl command `set` and then `image deployment/apiuserdep api-user=myregistry-on.azurecr.io/asc/api-user$(Build.BuildNumber) --record --namespace=$(namespace)`
+    ![release-dev](./media/release-dev.jpg)
+    The example yaml file deploys the newly built image associated with the existing `apiuserdep` deployment and when executing `kubectl rollout history deployment/apiuserdep` it will show the newly deployed image in history.
 
 ## 4. Release to different environments
