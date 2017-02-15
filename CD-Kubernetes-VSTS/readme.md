@@ -98,8 +98,10 @@ Create a new release definition and add the Kubernetes apply task and the genera
     ```
     The --namespace is only required if not using the default or already in this namespace context to set the secret.  If secrets rotation is desired, then it could also easily be added as a Kubernetes general task and the password could be added as a defined global environment variable for the release.
 
-    Now to setup continuous deployment, the only step needed is to go to the triggers tab and enable continuous deployment from the build setup earlier.  
-    ![release-trigger](./media/release-trigger.jpg)  
-    Now when a pull request is approved, the build will automatically happen and trigger a deployment to the Kubernetes cluster assuming the deployment conditions for the dev environment are set to automatically trigger a release.
+1. Enable CD Trigger - Now to setup continuous deployment, the only step needed is to go to the triggers tab and enable continuous deployment from the build setup earlier.  
+![release-trigger](./media/release-trigger.jpg)  
+Now go to the deployment conditions for the dev environment and set it to automatically trigger "after release".
+
+Now when a pull request is approved, the build will automatically happen and trigger a deployment to the Kubernetes cluster!
 
 ## 4. Release to different environments
