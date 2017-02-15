@@ -84,9 +84,14 @@ Now that the image is built and pushed to the private Docker image registry (ACR
     - General Task - specify the base kubectl command `set` and then `image deployment/apiuserdep api-user=myregistry-on.azurecr.io/asc/api-user:$(Build.BuildNumber) --record --namespace=$(namespace)`
     ![release-dev](./media/release-dev.jpg)
     The example yaml file deploys the newly built image associated with the existing `apiuserdep` deployment and when executing `kubectl rollout history deployment/apiuserdep` it will show the newly deployed image in history.
+     
      > Note: Google Container Engine (GKE) - requires some extra steps in order for this task to work properly since GKE requires an application default credential in order for kubectl to be able to execute (in addition to the .kube/config file already convered above in step 3.2).  To work around, these are the requirements which must be followed:
-     >> 1. Use a private VSTS linux-based build agent when executing the Kubernetes task and place the JSON service account key file onto the build controller.
-     >> 2. Configure a VSTS variable in release named GOOGLE_APPLICATION_CREDENTIALS and specify the value of the path where the JSON file is stored on the private build agent.  i.e. `/.config/myGoogleCreds.json`. Absolute paths must be used, so no `~` in the front.
+     >
+     >> 1. Use a private VSTS linux-based build agent when executing the Kubernetes task and place the JSON file onto the build controller.
+     >> 2. Configure a VSTS variable in release named `GOOGLE_APPLICATION_CREDENTIALS` and specify the value of the path where the JSON file is stored on the private build agent.  i.e. `/.config/myGoogleCreds.json`. Absolute paths must be used, so no `~` in the front.
+     >
+     > Fun side note:  GKE will still successfully pull images from Azure Container Registry using these steps!
+
 1. One-Time Prep Kubernetes cluster - adding the namespaces to deploy to and the secret used for ACR is required for the deployment to the Kubernetes deployment to be successful. These steps could be added as tasks to VSTS similar to above, but generally they are very infrequent so listing these as manual operations to apply using kubectl on your own host machine against the desired Kubernetes cluster.
     - Namespaces - are the way Kubernetes allows complete separation of resources and management within the same cluster.  The primary use case in this example makes it possible to deploy a "development" i.e. `ascdev` and "production" i.e. `ascprod` environment using the same exact names of resources on the same cluster. By default resources will deploy to the default namespace and this step is uncessary if deploying the same resources to different Kubernetes clusters.  To create the namespaces, simply execute `kubectl apply -f namespaces.yaml` where [namespaces.yaml](./code/namespaces.yaml) is the sample code.  Learn more about [Kubernetes namepaces](https://kubernetes.io/docs/user-guide/namespaces/).
 
