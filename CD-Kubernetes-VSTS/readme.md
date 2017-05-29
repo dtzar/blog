@@ -60,9 +60,6 @@ If following steps 1b, then an additional build defition should be created as a 
             - name: ascreg
     ```
 
-    Now check-in the defined YAML file and [kubectl executeable](https://kubernetes.io/docs/user-guide/prereqs/) into the source repo, add the "Copy and Publish Build Artifacts" task, and specify the location of where the YAML and kubectl files are located in the contents box separated by a new line.
-     > Note: Currently the Kubernetes task requires kubectl checked into source, but this could change in future versions of the task.  If multiple services are using kubectl or the desire is to reduce the size of the repository, it is best to check kubectl into a separate code repository, publish just the kubectl artifact, and then link that build artifact the desired VSTS release definitions.
-
     ![docker-build](./media/docker-build.jpg)
 
 ## 3. Setup Continuous Deployment
@@ -80,8 +77,14 @@ Now that the image is built and pushed to the private Docker image registry (ACR
     Create a new release definition and add the Kubernetes apply task and the general task.
     - Apply Task - specify the location of the yaml file which will configure your desired Kubernetes resources from the artifacts published in step 2.4 above.  This will execute the equivalent of `kubectl apply -f yourfile.yaml` which creates the resources specified in the yaml file if they aren't already created against the Kubernetes cluster setup in step 3.2 above.  Note: line # in the example yaml file specifies the Kubernetes namespace `ascdev` for the deployment and line # specifies `apiuserdep` as the name of the deployment which is used in the command executed next.
 
-    Technically this could be the only step executed for a deployment, but what happens when a new container image needs to be deployed?  If the yaml file uses the latest tag and the imagePullPolicy is set to always, it will update.  The challenge here is it takes more digging to know what actual build is associated with the latest tag for the deployment. If it's desired to use a tag associated with a build to deploy - then there are two major options 1) update the yaml file which references new tagged versions of the image - this could be via source code (but is challenging because of not knowing the build number) or via a tokenizer task to modify the yaml build number in this phase of the release.  2) Execute the `kubectl set image` ... command as explained in the general task next.
-    - General Task - specify the base kubectl command `set` and then `image deployment/apiuserdep api-user=myregistry-on.azurecr.io/asc/api-user:$(Build.BuildNumber) --record --namespace=$(namespace)`
+    If the yaml file uses the latest tag and the imagePullPolicy is set to always, technically this could be the only step executed for a deployment, but there are downfalls to using the latest tag for all deployments.  What if someone accidentally deploys a bad image with the latest tag to ACR?  How it be known for sure what actual build is associated with the latest tag for the deployment? If it's desired to use a tag associated with an image to deploy (which is a best practice) - then there are two major options:  
+    1. Update the yaml file which references new tagged versions of the image - this could be via source code (but is challenging because of not knowing the build number) or via a tokenizer task to modify the yaml build number in this phase of the release.
+    1. Execute the `kubectl set image` ... command as explained in the general task next.
+        - Ensure the 2.x version of the task is selected in the top right corner
+        - Click on the "Run on agent" and ensure "Hosted Linux Preview is selected".
+        - Leave the kubectl binary and kubectl download versions blank. 
+        - Specify the base kubectl command `set` 
+        - Specify the arguments i.e. `image deployment/apiuserdep api-user=myregistry-on.azurecr.io/asc/api-user:$(Build.BuildNumber) --record --namespace=$(namespace)`
     ![release-dev](./media/release-dev.jpg)
     The example yaml file deploys the newly built image associated with the existing `apiuserdep` deployment and when executing `kubectl rollout history deployment/apiuserdep` it will show the newly deployed image in history.
      
