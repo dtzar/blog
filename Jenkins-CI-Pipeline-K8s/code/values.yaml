@@ -6,14 +6,14 @@
 Master:
   Name: jenkins-master
   Image: "jenkins/jenkins"
-  ImageTag: "2.88"
+  ImageTag: "latest"
   ImagePullPolicy: "Always"
   Component: "jenkins-master"
   UseSecurity: true
   AdminUser: admin
-# AdminPassword: <defaults to random>
-  Cpu: "200m"
-  Memory: "256Mi"
+  AdminPassword: SomePassword
+  Cpu: "500m"
+  Memory: "1024Mi"
 # Set min/max heap here if needed with:
 # JavaOpts: "-Xms512m -Xmx512m"
 # JenkinsOpts: ""
@@ -43,14 +43,15 @@ Master:
 # JMXPort: 4000
 # List of plugins to be install during Jenkins master start
   InstallPlugins:
-      - kubernetes:1.1
-      - workflow-aggregator:2.5
-      - workflow-job:2.13
-      - credentials-binding:1.13
-      - git:3.6.4
-      - pipeline-github-lib:1.0
-      - ghprb:1.39.0
-      - blueocean:1.3.1
+      - kubernetes
+      - workflow-aggregator
+      - workflow-job
+      - credentials-binding
+      - git
+      - pipeline-github-lib
+      - ghprb
+      - blueocean
+      - azure-acs
 # Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
   ScriptApproval:
     - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
@@ -84,11 +85,11 @@ Master:
 Agent:
   Enabled: true
   Image: jenkinsci/jnlp-slave
-  ImageTag: 2.62
+  ImageTag: latest
   Component: "jenkins-slave"
-  Privileged: false
-  Cpu: "200m"
-  Memory: "256Mi"
+  Privileged: true
+  Cpu: "1000m"
+  Memory: "1000Mi"
   # You may want to change this to true while testing a new image
   AlwaysPullImage: false
   # You can define the volumes that you want to mount for this container
@@ -96,9 +97,9 @@ Agent:
   # Configure the attributes as they appear in the corresponding Java class for that type
   # https://github.com/jenkinsci/kubernetes-plugin/tree/master/src/main/java/org/csanchez/jenkins/plugins/kubernetes/volumes
   volumes:
-  # - type: Secret
-  #   secretName: mysecret
-  #   mountPath: /var/myapp/mysecret
+    - type: HostPath
+      hostPath: /var/run/docker.sock
+      mountPath: /var/run/docker.sock
   NodeSelector: {}
   # Key Value selectors. Ex:
   # jenkins-agent: v1
@@ -108,7 +109,7 @@ Persistence:
   ## A manually managed Persistent Volume and Claim
   ## Requires Persistence.Enabled: true
   ## If defined, PVC must be created manually before volume will be bound
-  # ExistingClaim:
+  ExistingClaim: jenkins-pv-claim
 
   ## jenkins data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
@@ -135,9 +136,6 @@ Persistence:
       name: docker-bin
     - mountPath: /var/run/docker.sock
       name: docker-sock
-#  - mountPath: /var/nothing
-#    name: nothing
-#    readOnly: true
 
 NetworkPolicy:
   # Enable creation of NetworkPolicy resources.
