@@ -6,7 +6,7 @@
 Master:
   Name: jenkins-master
   Image: "jenkins/jenkins"
-  ImageTag: "latest"
+  ImageTag: "lts" #2.89
   ImagePullPolicy: "Always"
   Component: "jenkins-master"
   UseSecurity: true
@@ -43,15 +43,15 @@ Master:
 # JMXPort: 4000
 # List of plugins to be install during Jenkins master start
   InstallPlugins:
-      - kubernetes
-      - workflow-aggregator
-      - workflow-job
-      - credentials-binding
-      - git
-      - pipeline-github-lib
-      - ghprb
-      - blueocean
-      - azure-acs
+      - kubernetes #:1.1
+      - workflow-aggregator #:2.5
+      - workflow-job #:2.13
+      - credentials-binding #:1.13
+      - git #:3.6.4
+      - pipeline-github-lib #:1.0
+      - ghprb #:1.39.0
+      - blueocean #:1.3.1
+      - azure-acs #:0.1.4
 # Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
   ScriptApproval:
     - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
@@ -85,7 +85,7 @@ Master:
 Agent:
   Enabled: true
   Image: jenkinsci/jnlp-slave
-  ImageTag: latest
+  ImageTag: latest #3.14-1
   Component: "jenkins-slave"
   Privileged: true
   Cpu: "1000m"
@@ -109,7 +109,7 @@ Persistence:
   ## A manually managed Persistent Volume and Claim
   ## Requires Persistence.Enabled: true
   ## If defined, PVC must be created manually before volume will be bound
-  ExistingClaim: jenkins-pv-claim
+  #ExistingClaim: jenkins-pv-claim
 
   ## jenkins data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
@@ -118,7 +118,7 @@ Persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # StorageClass: "-"
+  StorageClass: "managed-premium"
 
   AccessMode: ReadWriteOnce
   Size: 8Gi
