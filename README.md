@@ -5,3 +5,4 @@ Likely these will be referenced by a short blog post at http://GoodChangeIT.com 
 
 Contents:
 - [Continuous Delivery to Kubernetes Clusters using VSTS](./CD-Kubernetes-VSTS/)
+- [K8s Ingress Controller on Azure with Public DNS label](./K8sIngressDNS/)
