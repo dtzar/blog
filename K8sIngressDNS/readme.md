@@ -1,6 +1,6 @@
 # K8s Ingress Controller on Azure with Public DNS label
 
-Learn how to setup an nginx ingress controller on Azure which will have an attached K8s service with public IP address and a DNS label.  The DNS label is not required to deploy an ingress controller, but is a new feature in K8s 1.9 [see this PR if desired](), enables traffic manager to manage traffic in front of your cluster endpoint, and have persistence in case the IP address changes.  Traffic manager is incredibly useful if you have more than one K8s cluster for performance (i.e. around the world with federation), fault tolerance, and enables a great way to migrate to a new cluster with little to no downtime.
+Learn how to setup an nginx ingress controller on Azure which will have an attached K8s service with public IP address and a DNS label.  The DNS label is not required to deploy an ingress controller, but is a new feature in K8s 1.9 [(see this PR if desired)](https://github.com/kubernetes/kubernetes/pull/47849), enables traffic manager to manage traffic in front of your cluster endpoint, and have persistence in case the IP address changes.
 
 Prerequisites:
 
@@ -16,7 +16,7 @@ This is the workflow to follow:
 
 The existing [public helm chart for an nginx-ingress controller](https://hub.kubeapps.com/charts/stable/nginx-ingress) works great.  This chart deploys the customized flavor of nginx controller for kubernetes.  [This post from nginx](https://github.com/nginxinc/kubernetes-ingress/blob/master/docs/nginx-ingress-controllers.md) explains the differences between it and out-of-the-box nginx and nginx-plus.
 
-There are some important customizations to the values.yaml to explain.  The full file can be found in this repository here.
+There are some important customizations to the default values.yaml from the helm chart to explain.  [Here is the full file](./code/values.yml) in this repo.
 
 - **image and tag** - The default chart at the moment is out of date with the latest nginx image, so we're overriding it with the publicly available values:
 
@@ -79,3 +79,5 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: "nginx"
 ```
+
+After this it might be desired to put traffic manager in front of the ingress controller. Traffic manager is incredibly useful if you have more than one K8s cluster for performance (i.e. around the world with federation), fault tolerance, and enables a great way to migrate to a new cluster with little to no downtime.
