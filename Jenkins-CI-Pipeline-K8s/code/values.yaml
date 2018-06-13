@@ -16,8 +16,8 @@ Master:
 # ImagePullSecret: jenkins
   Component: "jenkins-master"
   UseSecurity: true
-  AdminUser: admin
-  AdminPassword: SomePassword
+  AdminUser: jenkinsadmin
+  # AdminPassword: SomePassword
   Cpu: "500m"
   Memory: "1024Mi"
   # Environment variables that get added to the init container (useful for e.g. http_proxy)
@@ -41,9 +41,9 @@ Master:
   ServiceType: LoadBalancer
 # Master Service annotations
   ServiceAnnotations: {}
-    #   service.beta.kubernetes.io/aws-load-balancer-backend-protocol: https
+  # service.beta.kubernetes.io/azure-dns-label-name: "jenkinsk8s4azureyo"
 # Used to create Ingress record (should used with ServiceType: ClusterIP)
-# HostName: jenkins.cluster.local
+  # HostName: jenkinsk8s4azureyo.eastus.cloudapp.azure.com
 # NodePort: <to set explicitly, choose port between 30000-32767
   ContainerPort: 8080
     # Enable Kubernetes Liveness and Readiness Probes
