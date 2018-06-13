@@ -33,6 +33,8 @@ This is the workflow to follow:
 
     This configuration will create a new service of type Loadbalancer which will expose Jenkins directly with a public IP address.
 
+    > Note: It may take a few minutes to complete the deployment since the Jenkins container needs to wait for a PVC to be created and install the Jenkins plugins.
+
 1. Login to the cluster from the output of the helm chart deployment.
 
     ```shell
