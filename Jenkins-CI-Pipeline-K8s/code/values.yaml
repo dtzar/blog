@@ -3,21 +3,38 @@
 # Declare name/value pairs to be passed into your templates.
 # name: value
 
+## Overrides for generated resource names
+# See templates/_helpers.tpl
+# nameOverride:
+# fullnameOverride:
+
 Master:
   Name: jenkins-master
   Image: "jenkins/jenkins"
-  ImageTag: "lts" #2.89
+  ImageTag: "lts" #2.121.1
   ImagePullPolicy: "Always"
+# ImagePullSecret: jenkins
   Component: "jenkins-master"
   UseSecurity: true
   AdminUser: admin
   AdminPassword: SomePassword
   Cpu: "500m"
   Memory: "1024Mi"
-# Set min/max heap here if needed with:
-# JavaOpts: "-Xms512m -Xmx512m"
-# JenkinsOpts: ""
-# JenkinsUriPrefix: "/jenkins"
+  # Environment variables that get added to the init container (useful for e.g. http_proxy)
+  # InitContainerEnv:
+  #   - name: http_proxy
+  #     value: "http://192.168.64.1:3128"
+  # ContainerEnv:
+  #   - name: http_proxy
+  #     value: "http://192.168.64.1:3128"
+  # Set min/max heap here if needed with:
+  # JavaOpts: "-Xms512m -Xmx512m"
+  # JenkinsOpts: ""
+  # JenkinsUriPrefix: "/jenkins"
+  # Set RunAsUser to 1000 to let Jenkins run as non-root user 'jenkins' which exists in 'jenkins/jenkins' docker image.
+  # When setting RunAsUser to a different value than 0 also set FsGroup to the same value:
+  # RunAsUser: <defaults to 0>
+  # FsGroup: <will be omitted in deployment if RunAsUser is 0>
   ServicePort: 8080
 # For minikube, set this to NodePort, elsewhere use LoadBalancer
 # Use ClusterIP if your setup includes ingress controller
@@ -29,30 +46,47 @@ Master:
 # HostName: jenkins.cluster.local
 # NodePort: <to set explicitly, choose port between 30000-32767
   ContainerPort: 8080
+    # Enable Kubernetes Liveness and Readiness Probes
+  HealthProbes: true
+  HealthProbesTimeout: 60
+  # ~2 minutes to allow Jenkins to restart when upgrading plugins
+  HealthProbeLivenessFailureThreshold: 12
   SlaveListenerPort: 50000
+  DisabledAgentProtocols:
+    - JNLP-connect
+    - JNLP2-connect
+  CSRF:
+    DefaultCrumbIssuer:
+      Enabled: true
+      ProxyCompatability: true
+  CLI: false
+  # Kubernetes service type for the JNLP slave service
+  # SETTING THIS TO "LoadBalancer" IS A HUGE SECURITY RISK: https://github.com/kubernetes/charts/issues/1341
+  SlaveListenerServiceType: ClusterIP
+  SlaveListenerServiceAnnotations: {}
   LoadBalancerSourceRanges:
   - 0.0.0.0/0
-# Optionally assign a known public LB IP
-# LoadBalancerIP: 1.2.3.4
-# Optionally configure a JMX port
-# requires additional JavaOpts, ie
-# JavaOpts: >
-#   -Dcom.sun.management.jmxremote.port=4000
-#   -Dcom.sun.management.jmxremote.authenticate=false
-#   -Dcom.sun.management.jmxremote.ssl=false
-# JMXPort: 4000
-# List of plugins to be install during Jenkins master start
+  # Optionally assign a known public LB IP
+  # LoadBalancerIP: 1.2.3.4
+  # Optionally configure a JMX port
+  # requires additional JavaOpts, ie
+  # JavaOpts: >
+  #   -Dcom.sun.management.jmxremote.port=4000
+  #   -Dcom.sun.management.jmxremote.authenticate=false
+  #   -Dcom.sun.management.jmxremote.ssl=false
+  # JMXPort: 4000
+  # List of plugins to be install during Jenkins master start
   InstallPlugins:
-      - kubernetes #:1.1
-      - workflow-aggregator #:2.5
-      - workflow-job #:2.13
-      - credentials-binding #:1.13
-      - git #:3.6.4
+      - azure-acs #:0.2.3
+      - blueocean #:1.5.0
+      - credentials-binding #:1.16
+      - git #:3.9.1
+      - ghprb #:1.42.0
+      - kubernetes #:1.8.1
       - pipeline-github-lib #:1.0
-      - ghprb #:1.39.0
-      - blueocean #:1.3.1
-      - azure-acs #:0.1.4
-# Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
+      - workflow-aggregator #:2.5
+      - workflow-job #:2.21
+  # Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
   ScriptApproval:
     - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
     - "new groovy.json.JsonSlurperClassic"
@@ -61,18 +95,29 @@ Master:
     - "method java.util.Collection toArray"
     - "staticMethod org.kohsuke.groovy.sandbox.impl.Checker checkedCall java.lang.Object boolean boolean java.lang.String java.lang.Object[]"
     - "staticMethod org.kohsuke.groovy.sandbox.impl.Checker checkedGetProperty java.lang.Object boolean boolean java.lang.Object"
-# List of groovy init scripts to be executed during Jenkins master start
+  # List of groovy init scripts to be executed during Jenkins master start
   InitScripts:
-#  - |
-#    print 'adding global pipeline libraries, register properties, bootstrap jobs...'
+  #  - |
+  #    print 'adding global pipeline libraries, register properties, bootstrap jobs...'
+  # Kubernetes secret that contains a 'credentials.xml' for Jenkins
+  # CredentialsXmlSecret: jenkins-credentials
+  # Kubernetes secret that contains files to be put in the Jenkins 'secrets' directory,
+  # useful to manage encryption keys used for credentials.xml for instance (such as
+  # master.key and hudson.util.Secret)
+  # SecretsFilesSecret: jenkins-secrets
+  # Jenkins XML job configs to provision
+  # Jobs: |-
+  #   test: |-
+  #     <<xml here>>
   CustomConfigMap: false
-# Node labels and tolerations for pod assignment
-# ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
-# ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
+  # Node labels and tolerations for pod assignment
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
   NodeSelector: {}
   Tolerations: {}
 
   Ingress:
+    ApiVersion: extensions/v1beta1
     Annotations:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
@@ -86,10 +131,11 @@ Agent:
   Enabled: true
   Image: jenkinsci/jnlp-slave
   ImageTag: latest #3.14-1
+# ImagePullSecret: jenkins
   Component: "jenkins-slave"
   Privileged: true
-  Cpu: "1000m"
-  Memory: "1000Mi"
+  Cpu: "500m"
+  Memory: "512Mi"
   # You may want to change this to true while testing a new image
   AlwaysPullImage: false
   # You can define the volumes that you want to mount for this container
@@ -118,8 +164,9 @@ Persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  StorageClass: "managed-premium"
+  StorageClass: "default"
 
+  Annotations: {}
   AccessMode: ReadWriteOnce
   Size: 8Gi
   volumes:
