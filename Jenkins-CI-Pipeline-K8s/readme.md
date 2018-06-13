@@ -21,9 +21,14 @@ This is the workflow to follow:
 
     In order to accomplish this for running k8s on Azure, modify the `./code/values.yaml` file from this repo as follows:
 
-    - Uncomment line 44 and place the contents inside the brackets of line 43.  It should look no something like this: `ServiceAnnotations: {service.beta.kubernetes.io/azure-dns-label-name: "jenkinsk8s4azureyo"}`
-    - change the `jenkinsk8s4azureyo` to be a globally unique value per datacenter region
+    - Uncomment line 44 and place the contents inside the brackets of line 43.  It should look something like this: `ServiceAnnotations: {service.beta.kubernetes.io/azure-dns-label-name: "jenkinsk8s4azureyo"}`
+    - Change the `jenkinsk8s4azureyo` to be a globally unique value per datacenter region
     - Uncomment line 46 and replace the base name with whatever the value was changed to above.  Replace the datacenter region `eastus` in the example with whatever the region of where the Azure kubernetes cluster is deployed. i.e. `westus`
+
+    > Note: An existing ingress controller could also provide a valid alternative configuration for a DNS name with this helm chart configuring a new ingress rule. To accomplish this:
+    > - Change line 41 `ServiceType` to `ClusterIP`.
+    > - Change line 46 Hostname to match the name of the DNS name associated with the ingress controller service
+    > - Uncomment line 122 and replace the `nginx` value with the required annotation for the deployed ingress controller.
 
 1. Deploy Jenkins on top of your K8s cluster
 
