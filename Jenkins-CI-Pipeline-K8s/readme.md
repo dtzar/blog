@@ -53,3 +53,5 @@ This is the workflow to follow:
     The username from the template is `jenkinsadmin`.
 
 ## Configure Jenkins to utilize your Jenkinsfile pipeline from a GitHub repo
+
+TO DO - complete the other two sections...
