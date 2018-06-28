@@ -34,7 +34,7 @@ This is the workflow to follow:
 
     Specify the modified values.yaml file after `-f` in the below command from the previous step OR just use the default from this repo if skipping the above step.
 
-    `helm install --name k8sjenkins -f https://raw.githubusercontent.com/dtzar/blog/master/Jenkins-CI-Pipeline-K8s/code/values.yaml stable/jenkins --version 0.16.1`
+    `helm install --name k8sjenkins -f https://raw.githubusercontent.com/dtzar/blog/master/Jenkins-CI-Pipeline-K8s/code/values.yaml stable/jenkins --version 0.16.5`
 
     This configuration will create a new service of type Loadbalancer which will expose Jenkins directly with a public IP address.
 
@@ -43,8 +43,7 @@ This is the workflow to follow:
 1. Login to the cluster from the output of the helm chart deployment.
 
     ```shell
-    printf $(kubectl get secret --namespace default k8sjenkins-jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);ech
-    o
+    printf $(kubectl get secret --namespace default k8sjenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
     export SERVICE_IP=$(kubectl get svc --namespace default k8sjenkins-jenkins --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
     echo http://$SERVICE_IP:8080/login
     ```
