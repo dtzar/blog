@@ -45,10 +45,9 @@ Master:
 # Use ClusterIP if your setup includes ingress controller
   ServiceType: LoadBalancer
 # Master Service annotations
-  ServiceAnnotations: {}
-  # service.beta.kubernetes.io/azure-dns-label-name: "jenkinsk8s4azureyo"}
+  ServiceAnnotations: {service.beta.kubernetes.io/azure-dns-label-name: "jenkinsk8s336sub3"}
 # Used to create Ingress record (should used with ServiceType: ClusterIP)
-  # HostName: jenkinsk8s4azureyo.eastus.cloudapp.azure.com
+  HostName: jenkinsk8s336sub3.westus2.cloudapp.azure.com
 # NodePort: <to set explicitly, choose port between 30000-32767
   ContainerPort: 8080
     # Enable Kubernetes Liveness and Readiness Probes
@@ -155,9 +154,9 @@ Agent:
   # Configure the attributes as they appear in the corresponding Java class for that type
   # https://github.com/jenkinsci/kubernetes-plugin/tree/master/src/main/java/org/csanchez/jenkins/plugins/kubernetes/volumes
   volumes:
-    - type: HostPath
-      hostPath: /var/run/docker.sock
-      mountPath: /var/run/docker.sock
+    # - type: HostPath
+    #   hostPath: /var/run/docker.sock
+    #   mountPath: /var/run/docker.sock
   NodeSelector: {}
   # Key Value selectors. Ex:
   # jenkins-agent: v1
@@ -182,19 +181,19 @@ Persistence:
   AccessMode: ReadWriteOnce
   Size: 8Gi
   volumes:
-    - name: docker-bin
-      hostPath:
-        path: /usr/bin/docker
-    - name: docker-sock
-      hostPath:
-        path: /var/run/docker.sock
+    # - name: docker-bin
+    #   hostPath:
+    #     path: /usr/bin/docker
+    # - name: docker-sock
+    #   hostPath:
+    #     path: /var/run/docker.sock
 #  - name: nothing
 #    emptyDir: {}
   mounts:
-    - mountPath: /usr/bin/docker
-      name: docker-bin
-    - mountPath: /var/run/docker.sock
-      name: docker-sock
+    # - mountPath: /usr/bin/docker
+    #   name: docker-bin
+    # - mountPath: /var/run/docker.sock
+    #   name: docker-sock
 
 NetworkPolicy:
   # Enable creation of NetworkPolicy resources.
